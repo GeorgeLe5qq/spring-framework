@@ -943,6 +943,7 @@ public abstract class StringUtils {
 	}
 
 	/**
+	 * 这个函数用于将给定的字符串按照给定的分隔符分隔成字符串数组<br>
 	 * Tokenize the given String into a String array via a StringTokenizer.
 	 * Trims tokens and omits empty tokens.
 	 * <p>The given delimiters string is supposed to consist of any number of

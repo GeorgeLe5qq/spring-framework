@@ -17,6 +17,7 @@
 package org.springframework.beans.factory;
 
 /**
+ * 继承BeanFactory，也就是在BeanFactory定义的功能的基础上增加了对parentFactory的支持<br>
  * Sub-interface implemented by bean factories that can be part
  * of a hierarchy.
  *

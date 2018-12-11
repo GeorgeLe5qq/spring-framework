@@ -122,6 +122,7 @@ public class EncodedResource {
 	}
 
 	/**
+	 * 当设置了编码属性的时候Spring会使用相应的编码作为输入流的编码<br>
 	 * Open a {@code java.io.Reader} for the specified resource, using the specified
 	 * {@link #getCharset() Charset} or {@linkplain #getEncoding() encoding}
 	 * (if any).

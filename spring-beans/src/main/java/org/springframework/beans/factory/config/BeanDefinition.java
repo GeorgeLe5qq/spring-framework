@@ -21,6 +21,10 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.core.AttributeAccessor;
 
 /**
+ * BeanDefinition接口存在三种实现，RootBeanDefinition、ChildBeanDefinition以及GenericBeanDefinition<br><br>
+ * 三种实现均继承了AbstractBeanDefinition，其中BeanDefinition是配置文件中&lt;bean&gt;元素标签在容器内部的表现形式<br>
+ * &lt;bean&gt;元素标签拥有 class、scope、lazy-init 等配置属性， BeanDefinition 则提供了相应的 beanClass、scope、 lazylnit属性，BeanDefinition和&lt;bean&gt;中的属性是一一对应的。<br> 
+ * 其中RootBeanDefinition是最常用的实现类，它对应一般性的&lt;bean&gt;元素标签，GenericBeanDefmition是内2.5版本以后新加人的bean文件配置属性定义类，是一站式服务类。<br>
  * A BeanDefinition describes a bean instance, which has property values,
  * constructor argument values, and further information supplied by
  * concrete implementations.

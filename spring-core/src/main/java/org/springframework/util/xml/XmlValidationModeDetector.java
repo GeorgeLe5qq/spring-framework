@@ -97,6 +97,7 @@ public class XmlValidationModeDetector {
 				if (this.inComment || !StringUtils.hasText(content)) {
 					continue;
 				}
+				// 如果含有'DOCTYPE'字符，则认为是dtd验证模式
 				if (hasDoctype(content)) {
 					isDtdValidated = true;
 					break;
@@ -147,6 +148,7 @@ public class XmlValidationModeDetector {
 	 * the DOCTYPE declaration or the root element of the document.
 	 */
 	private String consumeCommentTokens(String line) {
+		// 如果文本不包含开始的注释符和结束的注释符则返回
 		if (!line.contains(START_COMMENT) && !line.contains(END_COMMENT)) {
 			return line;
 		}

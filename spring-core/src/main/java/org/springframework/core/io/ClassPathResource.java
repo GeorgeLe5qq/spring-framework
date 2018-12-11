@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.xml.sax.InputSource;
 
 /**
  * {@link Resource} implementation for class path resources.
@@ -152,6 +153,21 @@ public class ClassPathResource extends AbstractFileResolvingResource {
 	}
 
 	/**
+	 * Spring从类路径下加载资源文件也是利用了java的getResourceAsStream获取的<br>
+	 * path不以'/'开头时，默认是指所在类的相对路径，从这个相对路径下取资源<br>
+	 * path以'/'开头时，则是从项目的ClassPath根下获取资源，就是要写相对于classpath根下的绝对路径<br>
+	 * 例如:<br>
+	 * com  <br>
+	   |-github  <br>
+	          |-demo  <br>
+	          |    |-A.class  <br>
+	          |    |-1.txt  <br>
+	          |-B.class  <br>
+	          |-2.txt<br>
+	 * 相对路径：InputStream is= A.class.getResourceAsStream("1.txt")；
+	 * 路径不是以/开头，说明这是一个相对路径，相对的是A.class这个文件，所以，这里的“1.txt”所指的正确位置是与A.class处于同一目录下的1.txt文件，这一文件是存在的，所引不会报错。<br>
+	 * Spring beans的jar包在打包后，dtd、xsd文件资源都是放在在与class文件相同的文件夹下
+	 * <br>
 	 * This implementation opens an InputStream for the given class path resource.
 	 * @see java.lang.ClassLoader#getResourceAsStream(String)
 	 * @see java.lang.Class#getResourceAsStream(String)
@@ -159,9 +175,18 @@ public class ClassPathResource extends AbstractFileResolvingResource {
 	public InputStream getInputStream() throws IOException {
 		InputStream is;
 		if (this.clazz != null) {
+			/**
+			 * 通过指定一个类去查找文件
+			 * Resource resource = new ClassPathResource(dtdFile, getClass());
+			 * InputSource source = new InputSource(resource.getInputStream());
+			 */
 			is = this.clazz.getResourceAsStream(this.path);
 		}
 		else if (this.classLoader != null) {
+			/**
+			 * Resource resource = new ClassPathResource("application-dev.xml");
+			 * InputStream inputStream = resource.getInputStream();
+			 */
 			is = this.classLoader.getResourceAsStream(this.path);
 		}
 		else {

@@ -1,18 +1,9 @@
-/*
-
-	Gradle 编译spring源码时报错 peer not authenticated
-	解决方法，
-
-	1.打开build.gradle文件，把所有网址中的 https 改成 http。
-
-	2.在repositories中新增 maven { url "http://repo.springsource.org/plugins-release" }
-
-
-
-*/
 buildscript {
 	repositories {
-		maven { url "http://repo.spring.io/plugins-release" }
+		maven { url "https://repo.spring.io/plugins-release" }
+		//maven { url "https://repo.spring.io/milestone" }
+		//maven { url "https://repo.spring.io/snapshot" }
+		//maven { url "https://repo.spring.io/plugins-release" }
 	}
 	dependencies {
 		classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7")
@@ -86,13 +77,13 @@ configure(allprojects) { project ->
 	}
 
 	repositories {
-		maven { url "http://repo.spring.io/libs-release" }
+		maven { url "https://repo.spring.io/libs-release" }
 		// 官网直接clone下来的代码运行编译(import-into-eclipse.sh)的时候会报错: 
 		// Could not resolve org.springframework.build.gradle:propdeps-plugin:0.0.7.
 		// 添加这个仓库就可以成功编译了
-		maven { url "http://repo.spring.io/milestone" }
-		maven { url "http://repo.spring.io/snapshot" }
-		maven { url "http://repo.spring.io/plugins-release" }
+		maven { url "https://repo.spring.io/milestone" }
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/plugins-release" }
 		maven { url "http://repo.springsource.org/plugins-release" }	
 	}
 

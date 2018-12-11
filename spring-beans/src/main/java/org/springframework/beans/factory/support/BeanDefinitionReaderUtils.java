@@ -57,9 +57,12 @@ public class BeanDefinitionReaderUtils {
 			String parentName, String className, ClassLoader classLoader) throws ClassNotFoundException {
 
 		GenericBeanDefinition bd = new GenericBeanDefinition();
+		// parentName可能为空
 		bd.setParentName(parentName);
 		if (className != null) {
 			if (classLoader != null) {
+				// 如果classLoader不为空，则使用以传入的classLoader同一虚拟机加载类对象，否则只是记录className
+				// beanClass是Object类型
 				bd.setBeanClass(ClassUtils.forName(className, classLoader));
 			}
 			else {
@@ -145,10 +148,13 @@ public class BeanDefinitionReaderUtils {
 
 		// Register bean definition under primary name.
 		String beanName = definitionHolder.getBeanName();
+		// 使用beanName作为唯一标识注册
+		// 这里调用的是 DefaultListableBeanFactory 的注册方法
 		registry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());
 
 		// Register aliases for bean name, if any.
 		String[] aliases = definitionHolder.getAliases();
+		// 注册所有的别名
 		if (aliases != null) {
 			for (String aliase : aliases) {
 				registry.registerAlias(beanName, aliase);

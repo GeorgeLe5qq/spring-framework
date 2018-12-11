@@ -35,27 +35,54 @@ import org.springframework.util.StringValueResolver;
  * @author Juergen Hoeller
  * @since 2.5.2
  */
+
+/**
+ * 主要使用map作为alias的缓存，并对接口AliasRegistry进行实现
+ * 	例：
+ *  <alias name="dataSource" alias="dataa"/>
+	<alias name="dataSource" alias="datab"/>
+	
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${driver}" />
+		<property name="url" value="${url}" />
+		<property name="username" value="${username}" />
+		<property name="password" value="${password}" />
+	</bean>
+ *
+ * @author lizhongzhi
+ */
 public class SimpleAliasRegistry implements AliasRegistry {
 
 	/** Map from alias to canonical name */
 	private final Map<String, String> aliasMap = new ConcurrentHashMap<String, String>(16);
 
-
+	
+	/**
+	 * (1 ) alias与beanName相同情况处理。若alias与beanName并名称相同则不需要处理并删除对应的alias。
+	 * (2 ) alias覆盖处理。若aliasName已经使用并已经指向了另一 beanName则需要用户的设置迸行处理
+	 * (3) alias循环检查。当 A->B 存在时，若再次出现 A->C->B 时候则会抛出异常。
+	 * (4 )注册 alias。
+	 */
 	public void registerAlias(String name, String alias) {
 		Assert.hasText(name, "'name' must not be empty");
 		Assert.hasText(alias, "'alias' must not be empty");
+		// 如果 beanName 与 alias 相同的话不记录alias，并删除对应的alias
 		if (alias.equals(name)) {
 			this.aliasMap.remove(alias);
 		}
 		else {
 			if (!allowAliasOverriding()) {
+				// 如果alias不允许被覆盖则抛出异常
 				String registeredName = this.aliasMap.get(alias);
 				if (registeredName != null && !registeredName.equals(name)) {
 					throw new IllegalStateException("Cannot register alias '" + alias + "' for name '" +
 							name + "': It is already registered for name '" + registeredName + "'.");
 				}
 			}
+			// 当 A->B 存在时，若再次出现 A->C->B 时候则会抛出异常
 			checkForAliasCircle(name, alias);
+			// 注册 alias
 			this.aliasMap.put(alias, name);
 		}
 	}

@@ -32,6 +32,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.util.Assert;
 
 /**
+ * 对EnvironmentCapable，BeanDefinitionReader类定义的功能进行实现<br>
  * Abstract base class for bean definition readers which implement
  * the {@link BeanDefinitionReader} interface.
  *
@@ -50,6 +51,9 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 
 	private final BeanDefinitionRegistry registry;
 
+	/**
+	 * 定义资源加载器，主要应用于根据给定的资源文件地址返回对应的Resource
+	 */
 	private ResourceLoader resourceLoader;
 
 	private ClassLoader beanClassLoader;

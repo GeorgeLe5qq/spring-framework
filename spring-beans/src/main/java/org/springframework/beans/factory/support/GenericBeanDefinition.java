@@ -38,6 +38,9 @@ import org.springframework.beans.factory.config.BeanDefinition;
 @SuppressWarnings("serial")
 public class GenericBeanDefinition extends AbstractBeanDefinition {
 
+	/**
+	 * 对应于<bean>标签的parent属性
+	 */
 	private String parentName;
 
 

@@ -157,6 +157,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	public AbstractAutowireCapableBeanFactory() {
 		super();
+		/**
+		 * 实现了以下接口的类不会自动装配
+		 * 例如: 
+		 * A中有属性B，正常情况下，当实例化A的时候，如果B还没有初始化，那么Spring会自动初始化B
+		 * 但是在某些情况下，B不会被初始化，那就是B实现了BeanNameAware或BeanFactoryAware或BeanClassLoaderAware接口
+		 */
 		ignoreDependencyInterface(BeanNameAware.class);
 		ignoreDependencyInterface(BeanFactoryAware.class);
 		ignoreDependencyInterface(BeanClassLoaderAware.class);
@@ -249,6 +255,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 * 忽略自定接口的自动装配功能<br>
 	 * Ignore the given dependency interface for autowiring.
 	 * <p>This will typically be used by application contexts to register
 	 * dependencies that are resolved in other ways, like BeanFactory through

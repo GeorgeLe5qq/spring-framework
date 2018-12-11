@@ -22,6 +22,7 @@ import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.core.env.Environment;
 
 /**
+ * 定义读取Document并注册BeanDefinition的功能<br>
  * SPI for parsing an XML document that contains Spring bean definitions.
  * Used by XmlBeanDefinitionReader for actually parsing a DOM document.
  *
