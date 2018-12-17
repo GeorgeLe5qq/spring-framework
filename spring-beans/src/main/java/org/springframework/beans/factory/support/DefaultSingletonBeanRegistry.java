@@ -82,15 +82,24 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	/** Cache of singleton objects: bean name --> bean instance */
+	/** 用于保存BeanName和创建bean实例之间的关系 */
 	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<String, Object>(64);
 
 	/** Cache of singleton factories: bean name --> ObjectFactory */
+	/** 用于保存BeanName和创建bean的工厂之间的关系: bean name --> ObjectFactory */
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<String, ObjectFactory<?>>(16);
 
 	/** Cache of early singleton objects: bean name --> bean instance */
+	/**也是保存BeanName和bean实例之间关系，与singletonObjects的不同之处在于，
+	 *  当一个单例bean被放到这里后，那么当bean还在创建过程中，就可以通过 getBean 方法获取到了
+	 *  其目的是用来检测循环引用: bean name --> bean instance *
+	 */
 	private final Map<String, Object> earlySingletonObjects = new HashMap<String, Object>(16);
 
 	/** Set of registered singletons, containing the bean names in registration order */
+	/**
+	 * 用来保存所有当前已注册的bean
+	 */
 	private final Set<String> registeredSingletons = new LinkedHashSet<String>(64);
 
 	/** Names of beans that are currently in creation (using a ConcurrentHashMap as a Set) */
@@ -165,6 +174,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	}
 
 	public Object getSingleton(String beanName) {
+		// 参数true设置标识允许早期依赖
 		return getSingleton(beanName, true);
 	}
 
@@ -176,15 +186,42 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @param allowEarlyReference whether early references should be created or not
 	 * @return the registered singleton object, or {@code null} if none found
 	 */
+	/**
+	 * 三级缓存
+	 *    一级缓存 singletonObject 指单例对象的cache
+	 *    二级缓存 earlySingletonObjects 指提前曝光的单例对象的cache
+	 *    三级缓存 singletonFactories 指单例对象工厂的cache
+	 *    
+	 * 两个参数解释
+	 *    1：isSingletonCurrentlyInCreation 判断对应的单例对象是否在创建中，当单例对象没有被初始化完全
+	 *    	(例如A定义的构造函数依赖了B对象，得先去创建B对象，或者在populatebean过程中依赖了B对象，得先去创建B对象，此时A处于创建中)
+	 *    2：allowEarlyReference 是否允许从singletonFactories中通过getObject拿到对象
+	 * 
+	 * Spring首先从singletonObjects（一级缓存）中尝试获取，如果获取不到并且对象在创建中，
+	 * 则尝试从earlySingletonObjects(二级缓存)中获取，如果还是获取不到并且允许从singletonFactories通过getObject获取，
+	 * 则通过singletonFactory.getObject()(三级缓存)获取。
+	 * @param beanName
+	 * @param allowEarlyReference
+	 * @return
+	 */
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+		// 检查缓存中是否存在实例
+		// singletonObjects 是ConcurrentHashMap，具有线程安全，读写还快的特点
+		// 因为ConcurrentHashMap引入了分割(segmentation)，不论它变得多么大，仅仅需要锁定map的某个部分，而其它的线程不需要等到迭代完成才能访问map。
 		Object singletonObject = this.singletonObjects.get(beanName);
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+			// 如果为空并且该bean处于当前创建池中，则锁定全局变量并进行处理
 			synchronized (this.singletonObjects) {
+				// 如果此bean正在加载则不处理
 				singletonObject = this.earlySingletonObjects.get(beanName);
+				// allowEarlyReference : 是否允许从singletonFactories中通过getObject拿到对象
 				if (singletonObject == null && allowEarlyReference) {
+					// 当某些方法需要提前初始化的时候则会调用 addSingletonFactory 方法将对应的 ObjectFactory 初始化策略存储在 singletonFactories
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
+						// 调用预先设定的 getObject 方法
 						singletonObject = singletonFactory.getObject();
+						// 移除对应的singletonFactory, 将singletonObject放入到earlySingletonObjects，其实就是将三级缓存提升到二级缓存中！
 						this.earlySingletonObjects.put(beanName, singletonObject);
 						this.singletonFactories.remove(beanName);
 					}
@@ -312,7 +349,15 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * (within the entire factory).
 	 * @param beanName the name of the bean
 	 */
+	/**
+	 * 判断对应的单例对象是否在创建中，当单例对象没有被初始化完全
+	 * (例如A定义的构造函数依赖了B对象，得先去创建B对象，或者在populatebean过程中依赖了B对象，得先去创建B对象，此时A处于创建中)
+	 * @param beanName
+	 * @return
+	 */
 	public boolean isSingletonCurrentlyInCreation(String beanName) {
+		// singletonsCurrentlyInCreation 是一个池子(当前创建Bean池)，如果这个bean仍处于创建中，则返回true
+		// 若创建完毕则会将bean从这个池子中删除
 		return this.singletonsCurrentlyInCreation.containsKey(beanName);
 	}
 
